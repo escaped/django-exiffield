@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+"e1839a8" = {path = ".", editable = true}
+
+[dev-packages]
+pytest = "*"
+pytest-cov = "*"
+pytest-django = "*"
+pytest-mock = "*"
+"pytest-flake8" = "*"
+"flake8-isort" = "*"
+"flake8-mypy" = "*"
+pillow = "*"
+
+[requires]
+python_version = "3.6"
