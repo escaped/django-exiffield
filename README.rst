@@ -58,3 +58,13 @@ to create and activet the required virtual enviroment with all dependencies.
 You can now run the test suite using ::
 
    pytest
+
+
+This repository follows the `angular commit conventions <https://github.com/marionebl/commitlint/tree/master/@commitlint/config-angular>`_.
+You can register a pre-commit hook to validate your commit messages by using
+`husky <https://github.com/typicode/husky>`_. The configurations are already in place if
+you have nodejs installed. Just run ::
+
+   npm install
+
+and the pre-commit hook will be registered.
