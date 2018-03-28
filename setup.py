@@ -35,6 +35,7 @@ setup(
     install_requires=[
         'Django>=1.8',
         'jsonfield>2.0<2.1',
+        'choicesenum>0.2.0',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',

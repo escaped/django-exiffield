@@ -30,9 +30,10 @@ class ExifField(JSONField):
         Check if current configuration is valid.
         """
         errors = super().check(**kwargs)
-        errors.extend(self._check_for_exiftool())
-        errors.extend(self._check_fields())
-        errors.extend(self._check_for_source())
+        if not self.model._meta.abstract:
+            errors.extend(self._check_for_exiftool())
+            errors.extend(self._check_fields())
+            errors.extend(self._check_for_source())
         return errors
 
     def _check_for_exiftool(self) -> Generator[checks.CheckMessage, None, None]:

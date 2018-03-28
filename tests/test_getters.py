@@ -87,7 +87,7 @@ def test_get_datetaken_invalid_data(exif_data, error_msg):
 ])
 def test_get_orientation(width, height, orientation, expected):
     exif_data = {
-        'Orientation': {'val': orientation},
+        'Orientation': {'num': orientation},
         'ImageWidth': {'val': width},
         'ImageHeight': {'val': height},
     }

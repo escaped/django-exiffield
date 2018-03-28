@@ -1,18 +1,20 @@
 import datetime
-import enum
+from enum import Enum
 from typing import Any, Callable, Dict, Optional
+
+from choicesenum import ChoicesEnum
 
 from .exceptions import ExifError
 
 ExifType = Dict[str, Dict[str, Any]]
 
 
-class Orientation(enum.Enum):
+class Orientation(ChoicesEnum, Enum):  # NOTE inherits from `Enum` to make `mypy` happy
     LANDSCAPE = 'landscape'
-    PORTRAIT = 'landscape'
+    PORTRAIT = 'portrait'
 
 
-class Mode(enum.Enum):
+class Mode(ChoicesEnum, Enum):  # NOTE inherits from `Enum` to make `mypy` happy
     TIMELAPSE = 'timelapse'
     BURST = 'burst'
     BRACKETING = 'bracketing'
@@ -60,7 +62,7 @@ def get_orientation(exif: ExifType) -> Orientation:
     """
     Return orientation of the file.
     """
-    orientation = exif['Orientation']['val']
+    orientation = exif['Orientation']['num']
 
     width, height = exif['ImageWidth']['val'], exif['ImageHeight']['val']
     if orientation > 4:
