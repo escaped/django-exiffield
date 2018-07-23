@@ -6,12 +6,37 @@ from typing import Generator, List
 
 from django.core import checks, exceptions
 from django.db import models
+from django.db.models.fields.files import FieldFile
 from django.db.models.signals import post_init, pre_save
 from jsonfield import JSONField
 
 from .exceptions import ExifError
 
 logger = logging.getLogger(__name__)
+
+
+def get_exif(file_: FieldFile) -> str:
+    exiftool_path = shutil.which('exiftool')
+    if not exiftool_path:
+        raise ExifError('Could not find `exiftool`')
+
+    if not file_._committed:
+        # pipe file content to exiftool
+        file_._file.seek(0)
+
+        process = subprocess.run(
+            [exiftool_path, '-j', '-l', '-'],
+            check=True,
+            input=file_._file.read(),
+            stdout=subprocess.PIPE,
+        )
+        return process.stdout
+    else:
+        # pass physical file to exiftool
+        file_path = file_.path
+        return subprocess.check_output(
+            [exiftool_path, '-j', '-l', file_path],
+        )
 
 
 class ExifField(JSONField):
@@ -171,6 +196,7 @@ class ExifField(JSONField):
     def update_exif(
             self,
             instance: models.Model,
+            force: bool = False,
             commit: bool = False,
             **kwargs,
     ) -> None:
@@ -179,16 +205,18 @@ class ExifField(JSONField):
         """
         file_ = getattr(instance, self.source)
         if not file_:
+            # there is no file attached to the FileField
             return
 
-        exiftool_path = shutil.which('exiftool')
-        if not exiftool_path:
-            raise ExifError('Could not find `exiftool`')
+        if file_._committed and not force:
+            # nothing to do since the file has not been changed
+            return
 
-        file_path = file_.path
-        exif_json = subprocess.check_output(
-            [exiftool_path, '-j', '-l', file_path],
-        )
+        try:
+            exif_json = get_exif(file_)
+        except Exception:
+            logger.exception('Could not read metainformation from file: %s', file_.path)
+            return
 
         try:
             exif_data = json.loads(exif_json)[0]

@@ -1,6 +1,10 @@
 from pathlib import Path
 
 import pytest
+from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
+
+from exiffield import fields
 
 from .models import Image
 
@@ -10,15 +14,47 @@ IMAGE_NAME = 'P1240157.JPG'
 
 @pytest.fixture
 def img(mocker):
+    """
+    Fake an uploaded file.
+    """
     img = Image()
-    with open(DIR / IMAGE_NAME, mode='rb') as fh:
-        img.image.save(IMAGE_NAME, fh)
-    img.save()
+    image_path = DIR / IMAGE_NAME
+    media_image_path = Path(settings.MEDIA_ROOT) / IMAGE_NAME
+    with open(image_path, mode='rb') as fh:
+        image_file = SimpleUploadedFile(
+            media_image_path,
+            fh.read(),
+        )
+    img.image.file = image_file
+    img.image.name = str(media_image_path)
+    img.image._committed = False
     return img
 
 
 @pytest.mark.django_db
-def test_exiftool(img):
+def test_unsupported_file():
+    img = Image()
+    media_path = Path(settings.MEDIA_ROOT) / 'foo.txt'
+    file_ = SimpleUploadedFile(
+        media_path,
+        'unsupported content'.encode('utf8'),
+    )
+    img.image.file = file_
+    img.image.name = str(media_path)
+    img.image._committed = False
+
+    # do not fail when saving
+    img.save()
+    assert img.exif == ''
+
+    # do not fail when saving and file is already saved to storage
+    img.save()
+    assert img.exif == ''
+
+
+@pytest.mark.django_db
+def test_extract_exif1(mocker, img):
+    img.save()
     img.refresh_from_db()  # exif should be in the database
 
     assert len(img.exif) > 0  # at least one EXIF tag
@@ -34,12 +70,53 @@ def test_exiftool(img):
 
 
 @pytest.mark.django_db
+def test_do_not_reextract_exif(mocker, img):
+    img.save()  # store image and extract exif
+
+    exif_field = img._meta.get_field('exif')
+    mocker.spy(fields, 'get_exif')
+
+    img.save()
+    assert fields.get_exif.call_count == 0
+
+    exif_field.update_exif(img)
+    assert fields.get_exif.call_count == 0
+
+
+@pytest.mark.django_db
+def test_do_not_extract_exif_without_file(mocker):
+    mocker.spy(fields, 'get_exif')
+
+    img = Image()
+    img.save()
+
+    assert fields.get_exif.call_count == 0
+    assert img.exif == ''
+
+
+@pytest.mark.django_db
+def test_extract_exif_if_forced(mocker, img):
+    img.save()  # store image and extract exif
+    img.exif = None
+
+    exif_field = img._meta.get_field('exif')
+    mocker.spy(fields, 'get_exif')
+
+    exif_field.update_exif(img, force=True)
+    assert fields.get_exif.call_count == 1
+    assert isinstance(img.exif, dict)
+
+
+@pytest.mark.django_db
 def test_denormalization(img):
+    img.save()  # store image and extract exif
     assert img.camera == 'DMC-GX7'
 
 
 @pytest.mark.django_db
 def test_denormalization_invalid_exif(img, caplog):
+    img.save()  # store image and extract exif
+
     # reset model
     img.camera = ''
     del img.exif['Model']
