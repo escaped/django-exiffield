@@ -15,6 +15,7 @@ pytest-mock = "*"
 "flake8-isort" = "*"
 "flake8-mypy" = "*"
 pillow = "*"
+wheel = "*"
 
 [requires]
 python_version = "3.6"
