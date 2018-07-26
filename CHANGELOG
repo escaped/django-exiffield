@@ -1,6 +1,14 @@
 CHANGELOG
 =======
 
+1.0 (26.97.2018)
+----------------
+
+- ability to extract exif from files whice are not stored to the storage
+- poetry as build tool
+
+
+
 0.1 (29.03.2018)
 ----------------
 Initial release
