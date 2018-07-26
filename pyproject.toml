@@ -39,6 +39,7 @@ django-jsonfield = "^1.0"
 pillow = "^5.0"
 
 [tool.poetry.dev-dependencies]
+coverage = "~4.4.2"
 flake8-isort = "^2.5"
 flake8-mypy = "^17.8"
 ipython = "^6.4"
