@@ -5,6 +5,7 @@ description = "django-exiffield extracts exif information by utilizing exiftool.
 authors = [
   "Alexander Frenzel <alex@relatedworks.com>"
 ]
+readme = "README.rst"
 license = "BSD-3-Clause"
 
 homepage = "https://github.com/escaped/django-exiffield"
