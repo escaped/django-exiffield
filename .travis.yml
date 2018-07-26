@@ -5,7 +5,7 @@ install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq libimage-exiftool-perl
   - pip install -U tox
-  - pip install python-coveralls
+  - pip install coveralls
   - npm install
 script:
   - node_modules/.bin/commitlint-travis
