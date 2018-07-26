@@ -10,7 +10,7 @@ def pytest_configure():
         DATABASES={
             'default': {
                 'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': 'test_exiffield.sqlite',
+                'NAME': ':memory:',
             },
         },
         ROOT_URLCONF='tests.urls',

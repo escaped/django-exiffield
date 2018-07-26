@@ -143,17 +143,16 @@ There are more predefined getters in ``exiffield.getters``:
 Development
 ===========
 
-This project is using `pipenv <https://docs.pipenv.org/>`_ to manage all dev dependencies.
+This project is using `poetry <https://poetry.eustace.io/>`_ to manage all dev dependencies.
 Clone this repository and run ::
 
-   pipenv install
-   pipenv shell
+   poetry develop
 
 
-to create and activet the required virtual enviroment with all dependencies.
+to create a virtual enviroment with all dependencies.
 You can now run the test suite using ::
 
-   pytest
+   poetry run pytest
 
 
 This repository follows the `angular commit conventions <https://github.com/marionebl/commitlint/tree/master/@commitlint/config-angular>`_.

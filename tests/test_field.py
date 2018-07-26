@@ -45,11 +45,11 @@ def test_unsupported_file():
 
     # do not fail when saving
     img.save()
-    assert img.exif == ''
+    assert img.exif == {}
 
     # do not fail when saving and file is already saved to storage
     img.save()
-    assert img.exif == ''
+    assert img.exif == {}
 
 
 @pytest.mark.django_db
@@ -91,7 +91,7 @@ def test_do_not_extract_exif_without_file(mocker):
     img.save()
 
     assert fields.get_exif.call_count == 0
-    assert img.exif == ''
+    assert img.exif == {}
 
 
 @pytest.mark.django_db
