@@ -16,6 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 def get_exif(file_: FieldFile) -> str:
+    """
+    Use exiftool to extract exif data from the given file field.
+    """
     exiftool_path = shutil.which('exiftool')
     if not exiftool_path:
         raise ExifError('Could not find `exiftool`')
