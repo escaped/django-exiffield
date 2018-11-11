@@ -108,6 +108,18 @@ def test_extract_exif_if_forced(mocker, img):
 
 
 @pytest.mark.django_db
+def test_extract_exif_and_save(mocker, img):
+    img.save()  # store image and extract exif
+    img.exif = None
+
+    exif_field = img._meta.get_field('exif')
+
+    exif_field.update_exif(img, commit=True, force=True)
+    img.refresh_from_db()
+    assert isinstance(img.exif, dict)
+
+
+@pytest.mark.django_db
 def test_denormalization(img):
     img.save()  # store image and extract exif
     assert img.camera == 'DMC-GX7'

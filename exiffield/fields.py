@@ -229,4 +229,4 @@ class ExifField(JSONField):
             setattr(instance, self.name, exif_data)
 
         if commit:
-            self.save()
+            instance.save()

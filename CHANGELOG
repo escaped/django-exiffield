@@ -1,12 +1,18 @@
 CHANGELOG
 =======
 
-1.0 (26.97.2018)
+
+1.0.1 (11.11.2018)
+----------------
+
+- fix `update_exif` with `commit=True`
+
+
+1.0.0 (26.09.2018)
 ----------------
 
 - ability to extract exif from files whice are not stored to the storage
 - poetry as build tool
-
 
 
 0.1 (29.03.2018)
