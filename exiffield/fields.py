@@ -185,11 +185,12 @@ class ExifField(JSONField):
             value = None
             try:
                 value = extract_from_exif(exif_data)
-            except Exception as e:
-                logger.exception(
+            except Exception:
+                logger.warning(
                     'Could not execute `%s` to extract value for `%s.%s`',
                     extract_from_exif.__name__,
                     instance.__class__.__name__, model_field,
+                    exc_info=True,
                 )
             if not value:
                 continue
