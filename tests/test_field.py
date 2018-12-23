@@ -124,6 +124,21 @@ def test_extract_exif_if_forced(mocker, img):
 
 
 @pytest.mark.django_db
+def test_extract_exif_if_file_changes(mocker, img):
+    img.save()  # store image and extract exif
+    img.exif = {'FileName': {'desc': 'File Nmae', 'val': 'foo.jpg'}}
+
+    exif_field = img._meta.get_field('exif')
+    exif_field.update_exif(img)
+
+    assert isinstance(img.exif, dict)
+    # there should be more than one key (`FileName`)
+    assert len(img.exif.keys()) > 1
+    filename = img.image.name.split('/')[-1]
+    assert img.exif['FileName']['val'] == filename
+
+
+@pytest.mark.django_db
 def test_extract_exif_and_save(mocker, img):
     img.save()  # store image and extract exif
     img.exif = None

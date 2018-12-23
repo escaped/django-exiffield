@@ -2,6 +2,7 @@ import json
 import logging
 import shutil
 import subprocess
+from pathlib import Path
 from typing import Generator, List
 
 from django.core import checks, exceptions
@@ -216,8 +217,11 @@ class ExifField(JSONField):
         # check whether extraction of the exif is required
         exif_data = getattr(instance, self.name, None) or {}
         has_exif = bool(exif_data)
+        filename = Path(file_.path).name
+        exif_for_filename = exif_data.get('filename', {}).get('val', '')
+        file_changed = has_exif and exif_for_filename != filename
 
-        if has_exif and not force:
+        if has_exif and not file_changed and not force:
             # nothing to do since the file has not been changed
             return
 
