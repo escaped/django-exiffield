@@ -51,6 +51,7 @@ class ExifField(JSONField):
         self.source = kwargs.pop('source', None)
         self.sync = kwargs.pop('sync', True)
         kwargs['editable'] = False
+        kwargs['default'] = {}
         super().__init__(*args, **kwargs)
 
     def check(self, **kwargs) -> List[checks.CheckMessage]:

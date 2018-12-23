@@ -36,8 +36,8 @@ python = ">=3.6"
 
 choicesenum = ">=0.2.2"
 django = ">=1.11"
-django-jsonfield = "^1.0"
 pillow = "^5.0"
+jsonfield2 = "^3.0"
 
 [tool.poetry.dev-dependencies]
 flake8-isort = "^2.5"

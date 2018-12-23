@@ -91,6 +91,7 @@ def test_do_not_extract_exif_without_file(mocker):
     img.save()
 
     assert fields.get_exif.call_count == 0
+    # the fallback value should always be an empty dict
     assert img.exif == {}
 
 
