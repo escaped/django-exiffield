@@ -53,7 +53,7 @@ def test_unsupported_file():
 
 
 @pytest.mark.django_db
-def test_extract_exif1(mocker, img):
+def test_extract_exif(mocker, img):
     img.save()
     img.refresh_from_db()  # exif should be in the database
 
@@ -112,7 +112,7 @@ def test_extract_exif_if_missing(mocker, img):
 @pytest.mark.django_db
 def test_extract_exif_if_forced(mocker, img):
     img.save()  # store image and extract exif
-    img.exif = None
+    img.exif = {'foo': {'desc': 'Foo', 'val': 0}}
 
     exif_field = img._meta.get_field('exif')
     mocker.spy(fields, 'get_exif')
