@@ -213,7 +213,11 @@ class ExifField(JSONField):
             # there is no file attached to the FileField
             return
 
-        if file_._committed and not force:
+        # check whether extraction of the exif is required
+        exif_data = getattr(instance, self.name, None) or {}
+        has_exif = bool(exif_data)
+
+        if has_exif and not force:
             # nothing to do since the file has not been changed
             return
 

@@ -96,6 +96,20 @@ def test_do_not_extract_exif_without_file(mocker):
 
 
 @pytest.mark.django_db
+def test_extract_exif_if_missing(mocker, img):
+    img.save()  # store image and extract exif
+    img.exif = {}
+
+    exif_field = img._meta.get_field('exif')
+    mocker.spy(fields, 'get_exif')
+
+    exif_field.update_exif(img)
+    assert fields.get_exif.call_count == 1
+    assert isinstance(img.exif, dict)
+    assert len(img.exif.keys()) > 0
+
+
+@pytest.mark.django_db
 def test_extract_exif_if_forced(mocker, img):
     img.save()  # store image and extract exif
     img.exif = None
@@ -106,6 +120,7 @@ def test_extract_exif_if_forced(mocker, img):
     exif_field.update_exif(img, force=True)
     assert fields.get_exif.call_count == 1
     assert isinstance(img.exif, dict)
+    assert 'foo' not in img.exif
 
 
 @pytest.mark.django_db
