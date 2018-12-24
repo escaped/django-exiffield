@@ -1,6 +1,13 @@
 CHANGELOG
 =======
 
+2.0.0 (24.12.2018)
+----------------
+
+- BREAKING: use [jsonfield2](https://pypi.org/project/jsonfield2/) as field base
+- extract exif if file changed or exif information is missing
+
+
 1.1.0 (04.12.2018)
 ----------------
 
