@@ -240,4 +240,4 @@ def test_denormalization_invalid_exif(img, caplog):
 
 @pytest.mark.xfail
 def test_async():
-    raise NotImplemented()
+    raise NotImplementedError()
