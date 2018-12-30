@@ -41,7 +41,6 @@ jsonfield2 = "^3.0"
 
 [tool.poetry.dev-dependencies]
 flake8-isort = "^2.5"
-flake8-mypy = "^17.8"
 ipython = "^6.4"
 pdbpp = "^0.9.2"
 pytest = "^3.6"
@@ -49,3 +48,4 @@ pytest-cov = "^2.5"
 pytest-django = "3.3.2"
 pytest-flake8 = "^1.0"
 pytest-mock = "^1.10"
+pytest-mypy = "^0.3.2"
