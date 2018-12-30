@@ -218,8 +218,8 @@ class ExifField(JSONField):
         exif_data = getattr(instance, self.name, None) or {}
         has_exif = bool(exif_data)
         filename = Path(file_.path).name
-        exif_for_filename = exif_data.get('filename', {}).get('val', '')
-        file_changed = has_exif and exif_for_filename != filename
+        exif_for_filename = exif_data.get('FileName', {}).get('val', '')
+        file_changed = exif_for_filename != filename or not file_._committed
 
         if has_exif and not file_changed and not force:
             # nothing to do since the file has not been changed
@@ -236,6 +236,15 @@ class ExifField(JSONField):
         except IndexError:
             return
         else:
+            if 'FileName' not in exif_data:
+                # If the file is uncommited, exiftool cannot extract a filenmae
+                # We guess, that no other file with the same filename exists in
+                # the storage.
+                # In the worst case the exif is extracted twice...
+                exif_data['FileName'] = {
+                    'desc': 'Filename',
+                    'val': filename,
+                }
             setattr(instance, self.name, exif_data)
 
         if commit:

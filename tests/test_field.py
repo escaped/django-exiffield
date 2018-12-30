@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -13,13 +14,16 @@ IMAGE_NAME = 'P1240157.JPG'
 
 
 @pytest.fixture
-def img(mocker):
+def uncommitted_img():
     """
-    Fake an uploaded file.
+    Create an unsaved image instance, which mimics an uploaded file.
+
+    The attached file has not yet been comitted.
     """
-    img = Image()
     image_path = DIR / IMAGE_NAME
     media_image_path = Path(settings.MEDIA_ROOT) / IMAGE_NAME
+
+    img = Image()
     with open(image_path, mode='rb') as fh:
         image_file = SimpleUploadedFile(
             media_image_path,
@@ -27,7 +31,42 @@ def img(mocker):
         )
     img.image.file = image_file
     img.image.name = str(media_image_path)
+    str(media_image_path)
     img.image._committed = False
+
+    try:
+        yield img
+    finally:
+        try:
+            os.unlink(img.image.path)
+        except FileNotFoundError:
+            pass
+
+
+@pytest.fixture
+def committed_img(uncommitted_img):
+    """
+    Create an unsaved image instance.
+    """
+    img = uncommitted_img
+    file_ = img.image
+    img.image.save(file_.name, file_.file, save=False)
+
+    try:
+        yield img
+    finally:
+        os.unlink(img.image.path)
+
+
+@pytest.fixture(params=['committed', 'uncommitted'])
+def img(request, uncommitted_img):
+    """
+    Return a committed and uncommitted image instance.
+    """
+    img = uncommitted_img
+    if request.param == 'committed':
+        file_ = img.image
+        img.image.save(file_.name, file_.file, save=False)
     return img
 
 
@@ -51,6 +90,9 @@ def test_unsupported_file():
     img.save()
     assert img.exif == {}
 
+    # cleanup
+    os.unlink(img.image.path)
+
 
 @pytest.mark.django_db
 def test_extract_exif(mocker, img):
@@ -70,7 +112,19 @@ def test_extract_exif(mocker, img):
 
 
 @pytest.mark.django_db
-def test_do_not_reextract_exif(mocker, img):
+def test_exif_should_contain_filename(mocker, committed_img):
+    img = committed_img
+    img.save()
+
+    assert 'FileName' in img.exif
+    filename = img.image.name.split('/')[-1]
+    assert img.exif['FileName']['desc'] == 'File Name'
+    assert img.exif['FileName']['val'] == filename
+
+
+@pytest.mark.django_db
+def test_do_not_reextract_exif_if_filename_is_known(mocker, committed_img):
+    img = committed_img
     img.save()  # store image and extract exif
 
     exif_field = img._meta.get_field('exif')
@@ -81,6 +135,18 @@ def test_do_not_reextract_exif(mocker, img):
 
     exif_field.update_exif(img)
     assert fields.get_exif.call_count == 0
+
+
+@pytest.mark.django_db
+def test_do_reextract_exif_if_new_file_is_uncommited(mocker, committed_img):
+    img = committed_img
+    img.save()  # store image and extract exif
+
+    mocker.spy(fields, 'get_exif')
+
+    img.image._committed = False
+    img.save()
+    assert fields.get_exif.call_count == 1
 
 
 @pytest.mark.django_db
@@ -125,17 +191,13 @@ def test_extract_exif_if_forced(mocker, img):
 
 @pytest.mark.django_db
 def test_extract_exif_if_file_changes(mocker, img):
+    img.exif = {'FileName': {'desc': 'File Name', 'val': 'foo.jpg'}}
     img.save()  # store image and extract exif
-    img.exif = {'FileName': {'desc': 'File Nmae', 'val': 'foo.jpg'}}
-
-    exif_field = img._meta.get_field('exif')
-    exif_field.update_exif(img)
 
     assert isinstance(img.exif, dict)
     # there should be more than one key (`FileName`)
     assert len(img.exif.keys()) > 1
-    filename = img.image.name.split('/')[-1]
-    assert img.exif['FileName']['val'] == filename
+    assert img.exif['FileName']['val'] != 'foo.jpg'
 
 
 @pytest.mark.django_db
