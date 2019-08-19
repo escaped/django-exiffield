@@ -125,7 +125,7 @@ There are more predefined getters in ``exiffield.getters``:
 ``get_type() -> str``
     Get file type, e.g. video or image
 
-``get_datetake -> Optional[datetime]``
+``get_datetaken -> Optional[datetime]``
     Get when the file was created as ``datetime``
 
 ``get_orientation  -> exiffield.getters.Orientation``
