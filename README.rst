@@ -36,6 +36,8 @@ Installation
 ============
 
 #. Install django-exiffield ::
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fescaped%2Fdjango-exiffield.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fescaped%2Fdjango-exiffield?ref=badge_shield)
+
 
     pip install django-exiffield
 
@@ -163,3 +165,7 @@ you have nodejs installed. Just run ::
    npm install
 
 and the pre-commit hook will be registered.
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fescaped%2Fdjango-exiffield.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fescaped%2Fdjango-exiffield?ref=badge_large)
