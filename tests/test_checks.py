@@ -19,6 +19,7 @@ def test_exiftool(mocked_which):
     """
     Test checks for external tool (exiftool).
     """
+
     class Image(models.Model):
         image = models.ImageField()
         exif = ExifField(source='image')
@@ -41,15 +42,19 @@ def test_exiftool(mocked_which):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize('kwargs, error', [
-    ({}, 'exiffield.E002'),  # `source` is not defined
-    ({'source': 'foobar'}, 'exiffield.E003'),  # `source` not found on model
-    ({'source': 'name'}, 'exiffield.E004'),  # `source` should be FileField
-])
+@pytest.mark.parametrize(
+    'kwargs, error',
+    [
+        ({}, 'exiffield.E002'),  # `source` is not defined
+        ({'source': 'foobar'}, 'exiffield.E003'),  # `source` not found on model
+        ({'source': 'name'}, 'exiffield.E004'),  # `source` should be FileField
+    ],
+)
 def test_source(mocked_which, kwargs, error):
     """
     Test checks for exif source.
     """
+
     class Image(models.Model):
         name = models.IntegerField()
         exif = ExifField(**kwargs)
@@ -65,16 +70,26 @@ def test_source(mocked_which, kwargs, error):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize('denormalized_fields, error', [
-    ([], 'exiffield.E005'),  # invalid type
-    ({'model_field': lambda exif: ''}, 'exiffield.E006'),  # field not found on model
-    ({'camera': lambda exif: ''}, 'exiffield.E007'),  # field is editable...
-    ({'datetaken': 'DateTimeOriginal'}, 'exiffield.E008'),  # value should be a callable
-])
+@pytest.mark.parametrize(
+    'denormalized_fields, error',
+    [
+        ([], 'exiffield.E005'),  # invalid type
+        (
+            {'model_field': lambda exif: ''},
+            'exiffield.E006',
+        ),  # field not found on model
+        ({'camera': lambda exif: ''}, 'exiffield.E007'),  # field is editable...
+        (
+            {'datetaken': 'DateTimeOriginal'},
+            'exiffield.E008',
+        ),  # value should be a callable
+    ],
+)
 def test_fields(mocked_which, denormalized_fields, error):
     """
     Test checks for denormalized fields.
     """
+
     class Image(models.Model):
         image = models.ImageField()
         camera = models.CharField(max_length=100)

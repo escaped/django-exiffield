@@ -25,10 +25,7 @@ def uncommitted_img():
 
     img = Image()
     with open(image_path, mode='rb') as fh:
-        image_file = SimpleUploadedFile(
-            media_image_path,
-            fh.read(),
-        )
+        image_file = SimpleUploadedFile(media_image_path, fh.read(),)
     img.image.file = image_file
     img.image.name = str(media_image_path)
     str(media_image_path)
@@ -74,10 +71,7 @@ def img(request, uncommitted_img):
 def test_unsupported_file():
     img = Image()
     media_path = Path(settings.MEDIA_ROOT) / 'foo.txt'
-    file_ = SimpleUploadedFile(
-        media_path,
-        'unsupported content'.encode('utf8'),
-    )
+    file_ = SimpleUploadedFile(media_path, 'unsupported content'.encode('utf8'),)
     img.image.file = file_
     img.image.name = str(media_path)
     img.image._committed = False

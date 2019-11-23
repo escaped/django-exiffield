@@ -49,3 +49,27 @@ pytest = "^5.3"
 pytest-cov = "^2.8"
 pytest-django = "^3.7"
 pytest-mock = "^1.12"
+black = "=19.10b0"
+
+[tool.black]
+line-length = 89
+skip-string-normalization = true
+target_version = ['py36']
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+)
+'''
+

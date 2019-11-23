@@ -6,15 +6,9 @@ from exiffield.getters import exifgetter
 
 class Image(models.Model):
     image = models.ImageField()
-    camera = models.CharField(
-        editable=False,
-        max_length=100,
-    )
+    camera = models.CharField(editable=False, max_length=100,)
     exif = ExifField(
-        source='image',
-        denormalized_fields={
-            'camera': exifgetter('Model'),
-        },
+        source='image', denormalized_fields={'camera': exifgetter('Model')},
     )
 
     class Meta:
