@@ -38,9 +38,10 @@ def get_exif(file_: FieldFile) -> str:
     else:
         # pass physical file to exiftool
         file_path = file_.path
-        return subprocess.check_output(
+        encoded_json = subprocess.check_output(
             [exiftool_path, '-j', '-l', file_path],
         )
+        return encoded_json.decode('utf8')
 
 
 class ExifField(JSONField):
