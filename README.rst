@@ -146,7 +146,7 @@ Development
 This project is using `poetry <https://poetry.eustace.io/>`_ to manage all dev dependencies.
 Clone this repository and run ::
 
-   poetry develop
+   poetry install
 
 
 to create a virtual enviroment with all dependencies.
@@ -154,12 +154,9 @@ You can now run the test suite using ::
 
    poetry run pytest
 
+To register the pre-commit hook, please run ::
 
-This repository follows the `angular commit conventions <https://github.com/marionebl/commitlint/tree/master/@commitlint/config-angular>`_.
-You can register a pre-commit hook to validate your commit messages by using
-`husky <https://github.com/typicode/husky>`_. The configurations are already in place if
-you have nodejs installed. Just run ::
+   poetry run pre-commit install
 
-   npm install
 
-and the pre-commit hook will be registered.
+This repository follows the `conventional commits <https://www.conventionalcommits.org/en/v1.0.0/>`_ convention.

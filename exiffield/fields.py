@@ -38,9 +38,8 @@ def get_exif(file_: FieldFile) -> str:
     else:
         # pass physical file to exiftool
         file_path = file_.path
-        return subprocess.check_output(
-            [exiftool_path, '-j', '-l', file_path],
-        )
+        encoded_json = subprocess.check_output([exiftool_path, '-j', '-l', file_path],)
+        return encoded_json.decode('utf8')
 
 
 class ExifField(JSONField):
@@ -72,8 +71,8 @@ class ExifField(JSONField):
         """
         if not shutil.which('exiftool'):
             yield checks.Error(
-                "`exiftool` not found.",
-                hint="Please install `exiftool.`",
+                '`exiftool` not found.',
+                hint='Please install `exiftool.`',
                 obj=self,
                 id='exiffield.E001',
             )
@@ -84,8 +83,8 @@ class ExifField(JSONField):
         """
         if not self.source:
             yield checks.Error(
-                f"`self.source` not set on {self.name}.",
-                hint="Set `self.source` to an existing FileField.",
+                f'`self.source` not set on {self.name}.',
+                hint='Set `self.source` to an existing FileField.',
                 obj=self,
                 id='exiffield.E002',
             )
@@ -96,15 +95,15 @@ class ExifField(JSONField):
             field = self.model._meta.get_field(self.source)
         except exceptions.FieldDoesNotExist:
             yield checks.Error(
-                f"`{self.source}` not found on {self.model}.",
-                hint="Check spelling or add field to model.",
+                f'`{self.source}` not found on {self.model}.',
+                hint='Check spelling or add field to model.',
                 obj=self,
                 id='exiffield.E003',
             )
             return
         if not isinstance(field, models.FileField):
             yield checks.Error(
-                f"`{self.source}` on {self.model} must be a FileField.",
+                f'`{self.source}` on {self.model} must be a FileField.',
                 obj=self,
                 id='exiffield.E004',
             )
@@ -116,8 +115,8 @@ class ExifField(JSONField):
         """
         if not isinstance(self.denormalized_fields, dict):
             yield checks.Error(
-                f"`denormalized_fields` on {self.model} should be a dictionary.",
-                hint="Check the kwargs of `ExifField`",
+                f'`denormalized_fields` on {self.model} should be a dictionary.',
+                hint='Check the kwargs of `ExifField`',
                 obj=self,
                 id='exiffield.E005',
             )
@@ -128,8 +127,8 @@ class ExifField(JSONField):
                 field = self.model._meta.get_field(fieldname)
             except exceptions.FieldDoesNotExist:
                 yield checks.Error(
-                    f"`{fieldname}` not found on {self.model}.",
-                    hint="Check spelling or add field to model.",
+                    f'`{fieldname}` not found on {self.model}.',
+                    hint='Check spelling or add field to model.',
                     obj=self,
                     id='exiffield.E006',
                 )
@@ -137,26 +136,21 @@ class ExifField(JSONField):
 
             if field.editable:
                 yield checks.Error(
-                    f"`{fieldname}` on {self.model} should not be editable.",
-                    hint=f"Set `editable=False` on {fieldname}.",
+                    f'`{fieldname}` on {self.model} should not be editable.',
+                    hint=f'Set `editable=False` on {fieldname}.',
                     obj=self,
                     id='exiffield.E007',
                 )
 
             if not callable(func):
                 yield checks.Error(
-                    f"`Value for {fieldname}` on {self.model} should not be a callable.",
-                    hint=f"Check your values for `denormalized_fields`",
+                    f'`Value for {fieldname}` on {self.model} should not be a callable.',
+                    hint=f'Check your values for `denormalized_fields`',
                     obj=self,
                     id='exiffield.E008',
                 )
 
-    def contribute_to_class(
-            self,
-            cls: models.Model,
-            name: str,
-            **kwargs,
-    ) -> None:
+    def contribute_to_class(self, cls: models.Model, name: str, **kwargs,) -> None:
         """
         Register signals for retrieving and writing of exif data.
         """
@@ -171,11 +165,7 @@ class ExifField(JSONField):
             pre_save.connect(self.denormalize_exif, sender=cls)
             post_init.connect(self.denormalize_exif, sender=cls)
 
-    def denormalize_exif(
-            self,
-            instance: models.Model,
-            **kwargs,
-    ) -> None:
+    def denormalize_exif(self, instance: models.Model, **kwargs,) -> None:
         """
         Update denormalized fields with new exif values.
         """
@@ -191,7 +181,8 @@ class ExifField(JSONField):
                 logger.warning(
                     'Could not execute `%s` to extract value for `%s.%s`',
                     extract_from_exif.__name__,
-                    instance.__class__.__name__, model_field,
+                    instance.__class__.__name__,
+                    model_field,
                     exc_info=True,
                 )
             if not value:
@@ -200,11 +191,11 @@ class ExifField(JSONField):
             setattr(instance, model_field, value)
 
     def update_exif(
-            self,
-            instance: models.Model,
-            force: bool = False,
-            commit: bool = False,
-            **kwargs,
+        self,
+        instance: models.Model,
+        force: bool = False,
+        commit: bool = False,
+        **kwargs,
     ) -> None:
         """
         Load exif data from file.

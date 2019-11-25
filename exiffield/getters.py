@@ -25,9 +25,11 @@ def exifgetter(field: str) -> Callable[[ExifType], Any]:
     """
     Return the unmodified value.
     """
+
     def inner(exif: ExifType) -> Any:
         return exif[field]['val']
-    inner.__name__ = f'exifgetter(\'{field}\')'
+
+    inner.__name__ = f'exifgetter("{field}")'
     return inner
 
 
@@ -49,10 +51,7 @@ def get_datetaken(exif: ExifType) -> Optional[datetime.datetime]:
             continue
 
         try:
-            return datetime.datetime.strptime(
-                datetime_str,
-                '%Y:%m:%d %H:%M:%S',
-            )
+            return datetime.datetime.strptime(datetime_str, '%Y:%m:%d %H:%M:%S',)
         except ValueError as e:
             raise ExifError(f'Could not parse {datetime_str}') from e
     raise ExifError(f'Could not find date')

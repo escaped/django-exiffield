@@ -5,6 +5,7 @@ language: python
 python:
   - 3.6
   - 3.7
+  - 3.8
 node_js: '8'
 
 install:
@@ -12,10 +13,12 @@ install:
   - sudo apt-get install -qq libimage-exiftool-perl
   - pip install -U tox-travis
   - pip install python-coveralls
-  - npm install
+  - pip install poetry
+  - poetry install
+  - poetry run pre-commit install
 
 script:
-  - node_modules/.bin/commitlint-travis
+  - poetry run pre-commit run -a
   - tox -r
 
 after_success:
