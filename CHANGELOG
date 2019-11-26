@@ -1,6 +1,13 @@
 CHANGELOG
 =======
 
+2.1.0 (24.12.2018)
+----------------
+
+- Add django 2.2 and python 3.8 to tox
+- Allow newer versions of pillow
+
+
 2.0.0 (24.12.2018)
 ----------------
 
