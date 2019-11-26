@@ -3,6 +3,8 @@
 !.coveragerc
 !.gitignore
 !.travis.yml
+!.github
+!.pre-commit-config.yaml
 
 
 # vim
