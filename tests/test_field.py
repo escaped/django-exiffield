@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from exiffield import fields
@@ -65,6 +66,39 @@ def img(request, uncommitted_img):
         file_ = img.image
         img.image.save(file_.name, file_.file, save=False)
     return img
+
+
+@pytest.fixture
+def remotestorage(mocker):
+    """
+    Return a patched FileSystemStorage that does not support path()
+    """
+    storage = FileSystemStorage()
+
+    def remote_open(name, mode):
+        media_image_path = Path(settings.MEDIA_ROOT) / IMAGE_NAME
+        return open(media_image_path, mode)
+
+    def remote_path():
+        raise NotImplementedError("Remote storage does not implement path()")
+
+    mocker.patch.object(storage, 'path', remote_path)
+    mocker.patch.object(storage, 'open', remote_open)
+    yield storage
+
+
+@pytest.fixture
+def img_remotestorage(remotestorage, img):
+    """
+    Return a committed and uncommitted image instance using remote storage
+    """
+    temp_storage = img.image.storage
+
+    img.image.storage = remotestorage
+
+    yield img
+
+    img.image.storage = temp_storage
 
 
 @pytest.mark.django_db
@@ -153,6 +187,17 @@ def test_do_not_extract_exif_without_file(mocker):
     assert fields.get_exif.call_count == 0
     # the fallback value should always be an empty dict
     assert img.exif == {}
+
+
+@pytest.mark.django_db
+def test_extract_remote_backend(mocker, img_remotestorage):
+    img = img_remotestorage
+
+    exif_field = img._meta.get_field('exif')
+    mocker.spy(fields, 'get_exif')
+
+    exif_field.update_exif(img)
+    assert fields.get_exif.call_count == 1
 
 
 @pytest.mark.django_db

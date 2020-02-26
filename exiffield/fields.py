@@ -26,20 +26,18 @@ def get_exif(file_: FieldFile) -> str:
 
     if not file_._committed:
         # pipe file content to exiftool
-        file_._file.seek(0)
-
-        process = subprocess.run(
-            [exiftool_path, '-j', '-l', '-'],
-            check=True,
-            input=file_._file.read(),
-            stdout=subprocess.PIPE,
-        )
-        return process.stdout
+        fo = file_._file
+        fo.seek(0)
     else:
-        # pass physical file to exiftool
-        file_path = file_.path
-        encoded_json = subprocess.check_output([exiftool_path, '-j', '-l', file_path],)
-        return encoded_json.decode('utf8')
+        fo = file_.open()
+
+    process = subprocess.run(
+        [exiftool_path, '-j', '-l', '-'],
+        check=True,
+        input=fo.read(),
+        stdout=subprocess.PIPE,
+    )
+    return process.stdout
 
 
 class ExifField(JSONField):
@@ -208,7 +206,7 @@ class ExifField(JSONField):
         # check whether extraction of the exif is required
         exif_data = getattr(instance, self.name, None) or {}
         has_exif = bool(exif_data)
-        filename = Path(file_.path).name
+        filename = Path(file_.name).name
         exif_for_filename = exif_data.get('FileName', {}).get('val', '')
         file_changed = exif_for_filename != filename or not file_._committed
 
@@ -219,7 +217,7 @@ class ExifField(JSONField):
         try:
             exif_json = get_exif(file_)
         except Exception:
-            logger.exception('Could not read metainformation from file: %s', file_.path)
+            logger.exception('Could not read metainformation from file: %s', file_.name)
             return
 
         try:
@@ -233,7 +231,7 @@ class ExifField(JSONField):
                 # the storage.
                 # In the worst case the exif is extracted twice...
                 exif_data['FileName'] = {
-                    'desc': 'Filename',
+                    'desc': 'File Name',
                     'val': filename,
                 }
             setattr(instance, self.name, exif_data)
