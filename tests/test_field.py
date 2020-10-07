@@ -25,7 +25,10 @@ def uncommitted_img():
 
     img = Image()
     with open(image_path, mode='rb') as fh:
-        image_file = SimpleUploadedFile(media_image_path, fh.read(),)
+        image_file = SimpleUploadedFile(
+            media_image_path,
+            fh.read(),
+        )
     img.image.file = image_file
     img.image.name = str(media_image_path)
     str(media_image_path)
@@ -69,23 +72,31 @@ def img(request, uncommitted_img):
 
 @pytest.mark.django_db
 def test_unsupported_file():
+    image_path = DIR / IMAGE_NAME
+    media_image_path = Path(settings.MEDIA_ROOT) / IMAGE_NAME
+
     img = Image()
-    media_path = Path(settings.MEDIA_ROOT) / 'foo.txt'
-    file_ = SimpleUploadedFile(media_path, 'unsupported content'.encode('utf8'),)
-    img.image.file = file_
-    img.image.name = str(media_path)
-    img.image._committed = False
+    with open(image_path, mode='rb') as fh:
+        # corrupt image
+        fh.seek(2048)
+        file_ = SimpleUploadedFile(media_image_path, fh.read())
 
-    # do not fail when saving
-    img.save()
-    assert img.exif == {}
+    try:
+        img.image.file = file_
+        img.image.name = str(media_image_path)
+        img.image._committed = False
 
-    # do not fail when saving and file is already saved to storage
-    img.save()
-    assert img.exif == {}
+        # do not fail when saving
+        img.save()
+        assert img.exif == {}
 
-    # cleanup
-    os.unlink(img.image.path)
+        # do not fail when saving and file is already saved to storage
+        img.save()
+        assert img.exif == {}
+
+    finally:
+        # cleanup
+        os.unlink(img.image.path)
 
 
 @pytest.mark.django_db

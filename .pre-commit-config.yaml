@@ -13,7 +13,7 @@ repos:
       - id: isort
         name: isort
         language: system
-        entry: poetry run isort
+        entry: poetry run isort -profile black
         types: [python]
 
   - repo: local
