@@ -25,7 +25,10 @@ def uncommitted_img():
 
     img = Image()
     with open(image_path, mode='rb') as fh:
-        image_file = SimpleUploadedFile(media_image_path, fh.read(),)
+        image_file = SimpleUploadedFile(
+            media_image_path,
+            fh.read(),
+        )
     img.image.file = image_file
     img.image.name = str(media_image_path)
     str(media_image_path)

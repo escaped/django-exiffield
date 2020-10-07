@@ -1,0 +1,19 @@
+{
+    "template": "https://github.com/escaped/cookiecutter-pypackage.git",
+    "commit": "cf218660e8a8eb8171a16291b250f46b519b1e71",
+    "context": {
+        "cookiecutter": {
+            "author": "Alexander Frenzel",
+            "author_email": "alex@relatedworks.com",
+            "github_username": "escaped",
+            "project_name": "django-exiffield",
+            "project_slug": "exiffield",
+            "short_description": "django-exiffield extracts exif information by utilizing the exiftool.",
+            "version": "2.1.0",
+            "line_length": "88",
+            "uses_django": "y",
+            "_template": "https://github.com/escaped/cookiecutter-pypackage.git"
+        }
+    },
+    "directory": null
+}
