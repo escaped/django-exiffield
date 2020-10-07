@@ -51,10 +51,13 @@ def get_datetaken(exif: ExifType) -> Optional[datetime.datetime]:
             continue
 
         try:
-            return datetime.datetime.strptime(datetime_str, '%Y:%m:%d %H:%M:%S',)
+            return datetime.datetime.strptime(
+                datetime_str,
+                '%Y:%m:%d %H:%M:%S',
+            )
         except ValueError as e:
             raise ExifError(f'Could not parse {datetime_str}') from e
-    raise ExifError(f'Could not find date')
+    raise ExifError('Could not find date')
 
 
 def get_orientation(exif: ExifType) -> Orientation:

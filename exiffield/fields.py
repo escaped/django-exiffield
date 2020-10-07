@@ -143,12 +143,17 @@ class ExifField(JSONField):
             if not callable(func):
                 yield checks.Error(
                     f'`Value for {fieldname}` on {self.model} should not be a callable.',
-                    hint=f'Check your values for `denormalized_fields`',
+                    hint='Check your values for `denormalized_fields`',
                     obj=self,
                     id='exiffield.E008',
                 )
 
-    def contribute_to_class(self, cls: models.Model, name: str, **kwargs,) -> None:
+    def contribute_to_class(
+        self,
+        cls: models.Model,
+        name: str,
+        **kwargs,
+    ) -> None:
         """
         Register signals for retrieving and writing of exif data.
         """
@@ -163,7 +168,11 @@ class ExifField(JSONField):
             pre_save.connect(self.denormalize_exif, sender=cls)
             post_init.connect(self.denormalize_exif, sender=cls)
 
-    def denormalize_exif(self, instance: models.Model, **kwargs,) -> None:
+    def denormalize_exif(
+        self,
+        instance: models.Model,
+        **kwargs,
+    ) -> None:
         """
         Update denormalized fields with new exif values.
         """

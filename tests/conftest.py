@@ -5,6 +5,9 @@ from django.conf import settings
 
 
 def pytest_configure():
+    """
+    Basic configuration of django for testing a django module.
+    """
     tests_dir = Path(__file__).parent
     settings.configure(
         DATABASES={
