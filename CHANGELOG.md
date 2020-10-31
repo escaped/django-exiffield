@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support remote storage, thanks to @jsutlovic
 
+### Changed
+
+- BREAKING: use [jsonfield](https://github.com/rpkilby/jsonfield) as field base as jsonfield2 is deprecated
+
 ## [2.1.0] - 2018-12-24
 
 ### Added

@@ -37,7 +37,7 @@ packages = [
 python = ">=3.6.1, <4.0"
 choicesenum = ">=0.2.2"
 django = ">=2.2"
-jsonfield2 = "^3.0"
+jsonfield = ">=3.0"
 pillow = ">=5.0"
 
 [tool.poetry.dev-dependencies]
