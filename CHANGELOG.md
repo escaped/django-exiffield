@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2020-10-30
+
 ### Added
 
 - Support remote storage, thanks to @jsutlovic
@@ -56,7 +58,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1] - 2018-03-29
 
-[Unreleased]: https://github.com/escaped/django-exiffield/compare/2.1.0...HEAD
+[Unreleased]: https://github.com/escaped/django-exiffield/compare/3.0.0...HEAD
+[3.0.0]: https://github.com/escaped/django-exiffield/compare/2.1.0...3.0.0
 [2.1.0]: https://github.com/escaped/django-exiffield/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/escaped/django-exiffield/compare/1.1.0...2.0.0
 [1.1.0]: https://github.com/escaped/django-exiffield/compare/1.0.0...1.1.0
