@@ -46,17 +46,17 @@ def exifgetter_num(field: str) -> Callable[[ExifType], Any]:
 
 
 def get_gps_latitude(exif: ExifType) -> str:
-	  """
+    """
     Return the latitude (decimal) where the file was taken.
     """
     try:
         return exif['GPSLatitude']['num']
     except KeyError:
-        return 0    
-    
+	    return 0
+           
     
 def get_gps_longitude(exif: ExifType) -> str:
-	  """
+    """
     Return the latitude (decimal) where the file was taken.
     """
     try:
