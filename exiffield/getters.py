@@ -33,6 +33,38 @@ def exifgetter(field: str) -> Callable[[ExifType], Any]:
     return inner
 
 
+def exifgetter_num(field: str) -> Callable[[ExifType], Any]:
+    """
+    Return the unmodified value.
+    """
+
+    def inner(exif: ExifType) -> Any:
+        return exif[field]['num']
+
+    inner.__name__ = f'exifgetter_num("{field}")'
+    return inner
+
+
+def get_gps_latitude(exif: ExifType) -> str:
+    """
+    Return the latitude (decimal) where the file was taken.
+    """
+    try:
+        return exif['GPSLatitude']['num']
+    except KeyError:
+	    return 0
+           
+    
+def get_gps_longitude(exif: ExifType) -> str:
+    """
+    Return the latitude (decimal) where the file was taken.
+    """
+    try:
+        return exif['GPSLongitude']['num']
+    except KeyError:
+        return 0        
+
+
 def get_type(exif: ExifType) -> str:
     """
     Return type of file, e.g. image.
