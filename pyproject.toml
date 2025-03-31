@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-exiffield"
-version = "3.0.0"
+version = "3.0.1"
 description = "django-exiffield extracts exif information by utilizing the exiftool."
 authors = [
     "Alexander Frenzel <alex@relatedworks.com>",

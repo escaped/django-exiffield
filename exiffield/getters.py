@@ -21,13 +21,13 @@ class Mode(ChoicesEnum, Enum):  # NOTE inherits from `Enum` to make `mypy` happy
     SINGLE = 'single'
 
 
-def exifgetter(field: str) -> Callable[[ExifType], Any]:
+def exifgetter(field: str, val='val') -> Callable[[ExifType], Any]:
     """
     Return the unmodified value.
     """
 
     def inner(exif: ExifType) -> Any:
-        return exif[field]['val']
+        return exif[field][val]
 
     inner.__name__ = f'exifgetter("{field}")'
     return inner
@@ -44,19 +44,30 @@ def get_datetaken(exif: ExifType) -> Optional[datetime.datetime]:
     """
     Return when the file was created.
     """
-    for key in ['DateTimeOriginal', 'GPSDateTime']:
-        try:
-            datetime_str = exif[key]['val']
-        except KeyError:
-            continue
 
+    def to_datetime(dt_str):
         try:
             return datetime.datetime.strptime(
-                datetime_str,
-                '%Y:%m:%d %H:%M:%S',
+                dt_str,
+                '%Y:%m:%d %H:%M:%S%z',
             )
         except ValueError as e:
-            raise ExifError(f'Could not parse {datetime_str}') from e
+            raise ExifError(f'Could not parse {dt_str}') from e
+
+    try:
+        datetime_str = exif['GPSDateTime']['val']
+        if datetime_str[-1] == 'Z':
+            datetime_str = datetime_str[:-1] + '+00:00'
+        return to_datetime(datetime_str)
+    except KeyError:
+        pass
+
+    try:
+        datetime_str = exif['DateTimeOriginal']['val'] + exif['OffsetTime']['val']
+        return to_datetime(datetime_str)
+    except KeyError:
+        pass
+
     raise ExifError('Could not find date')
 
 
@@ -107,5 +118,25 @@ def get_sequencenumber(exif) -> int:
     """
     try:
         return exif['SequenceNumber']['num']
+    except KeyError:
+        return 0
+
+
+def get_latitude(exif) -> float:
+    """
+    Return numeric latitude.
+    """
+    try:
+        return exif['GPSLatitude']['num']
+    except KeyError:
+        return 0
+
+
+def get_longitude(exif) -> float:
+    """
+    Return numeric longitude.
+    """
+    try:
+        return exif['GPSLongitude']['num']
     except KeyError:
         return 0
