@@ -1,14 +1,14 @@
-import os
 from pathlib import Path
 
 import pytest
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import models
 
 from exiffield import fields
 
-from .models import Image
+from .models import Image, UnsyncedImage
 
 DIR = Path(__file__).parent
 IMAGE_NAME = 'P1240157.JPG'
@@ -22,26 +22,21 @@ def uncommitted_img():
     The attached file has not yet been comitted.
     """
     image_path = DIR / IMAGE_NAME
-    media_image_path = Path(settings.MEDIA_ROOT) / IMAGE_NAME
 
     img = Image()
     with open(image_path, mode='rb') as fh:
         image_file = SimpleUploadedFile(
-            media_image_path,
+            IMAGE_NAME,
             fh.read(),
         )
     img.image.file = image_file
-    img.image.name = str(media_image_path)
-    str(media_image_path)
+    img.image.name = IMAGE_NAME
     img.image._committed = False
 
     try:
         yield img
     finally:
-        try:
-            os.unlink(img.image.path)
-        except FileNotFoundError:
-            pass
+        (Path(settings.MEDIA_ROOT) / IMAGE_NAME).unlink(missing_ok=True)
 
 
 @pytest.fixture
@@ -56,7 +51,7 @@ def committed_img(uncommitted_img):
     try:
         yield img
     finally:
-        os.unlink(img.image.path)
+        (Path(settings.MEDIA_ROOT) / IMAGE_NAME).unlink(missing_ok=True)
 
 
 @pytest.fixture(params=['committed', 'uncommitted'])
@@ -82,7 +77,7 @@ def remotestorage(mocker):
         media_image_path = Path(settings.MEDIA_ROOT) / IMAGE_NAME
         return open(media_image_path, mode)
 
-    def remote_path():
+    def remote_path(name):
         raise NotImplementedError("Remote storage does not implement path()")
 
     mocker.patch.object(storage, 'path', remote_path)
@@ -107,17 +102,16 @@ def img_remotestorage(remotestorage, img):
 @pytest.mark.django_db
 def test_unsupported_file():
     image_path = DIR / IMAGE_NAME
-    media_image_path = Path(settings.MEDIA_ROOT) / IMAGE_NAME
 
     img = Image()
     with open(image_path, mode='rb') as fh:
         # corrupt image
         fh.seek(2048)
-        file_ = SimpleUploadedFile(media_image_path, fh.read())
+        file_ = SimpleUploadedFile(IMAGE_NAME, fh.read())
 
     try:
         img.image.file = file_
-        img.image.name = str(media_image_path)
+        img.image.name = IMAGE_NAME
         img.image._committed = False
 
         # do not fail when saving
@@ -130,7 +124,7 @@ def test_unsupported_file():
 
     finally:
         # cleanup
-        os.unlink(img.image.path)
+        (Path(settings.MEDIA_ROOT) / IMAGE_NAME).unlink(missing_ok=True)
 
 
 @pytest.mark.django_db
@@ -286,6 +280,35 @@ def test_denormalization_invalid_exif(img, caplog):
 
     # no data should be added
     assert img.camera == ''
+
+
+def test_exif_field_is_native_json_field():
+    """
+    ExifField uses Django's native JSON field for storage.
+    """
+    field = Image._meta.get_field('exif')
+    assert isinstance(field, models.JSONField)
+
+
+@pytest.mark.django_db
+def test_sync_disabled_does_not_extract_exif(mocker):
+    """
+    With sync=False exif data is never extracted on save.
+    """
+    img = UnsyncedImage()
+    with open(DIR / IMAGE_NAME, mode='rb') as fh:
+        img.image.file = SimpleUploadedFile(IMAGE_NAME, fh.read())
+    img.image.name = IMAGE_NAME
+    img.image._committed = False
+
+    mocker.spy(fields, 'get_exif')
+    try:
+        img.save()
+    finally:
+        (Path(settings.MEDIA_ROOT) / IMAGE_NAME).unlink(missing_ok=True)
+
+    assert fields.get_exif.call_count == 0
+    assert img.exif == {}
 
 
 @pytest.mark.xfail

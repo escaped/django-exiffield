@@ -10,9 +10,9 @@ django-exiffield extracts exif information by utilizing the exiftool.
 
 ## Requirements
 
-* Python 3.6.1 or newer
-* [exiftool](https://www.sno.phy.queensu.ca/~phil/exiftool/)
-* Django >= 2.2
+* Python 3.10 or newer
+* [exiftool](https://exiftool.org/)
+* Django >= 5.2 (5.2 LTS, 6.0 and 6.1 are tested)
 
 ## Installation
 
@@ -69,9 +69,9 @@ the values with all familiar dictionary methods.
 
 ## Denormalizing Fields
 
-Since the `ExifField` stores its data simply as text, it is not possible to filter
-or access indiviual values efficiently.
-The `ExifField` provides a convinient way to denormalize certain values using
+The `ExifField` stores a generic exif document, so JSON lookups such as
+`exif__Model__val` work, but they are not indexable like dedicated columns.
+The `ExifField` provides a convenient way to denormalize certain values using
 the `denormalized_fields` argument.
 It takes a dictionary with the target field as key and a simple getter function of
 type `Callable[[Dict[Dict[str, str]]], Any]`.
@@ -113,7 +113,7 @@ Get when the file was created as `datetime`
 Get orientation of media file.
 Possible values are `LANDSCAPE` and `PORTRAIT`.
 
-`get_sequenctype -> exiffield.getters.Mode`  
+`get_sequencetype -> exiffield.getters.Mode`  
 Guess if the image was taken in a sequence.
 Possible values are `BURST`, `BRACKETING`, `TIMELAPSE` and `SINGLE`.
 
@@ -122,37 +122,32 @@ Get image position in a sequence.
 
 ## Development
 
-This project uses [poetry](https://poetry.eustace.io/) for packaging and
-managing all dependencies and [pre-commit](https://pre-commit.com/) to run
-[flake8](http://flake8.pycqa.org/), [isort](https://pycqa.github.io/isort/),
-[mypy](http://mypy-lang.org/) and [black](https://github.com/python/black).
+This project uses [uv](https://docs.astral.sh/uv/) for packaging and managing
+all dependencies. [ruff](https://docs.astral.sh/ruff/) handles formatting and
+linting and [mypy](https://mypy-lang.org/) is used for type checking.
 
 Clone this repository and run
 
 ```bash
-poetry install
-poetry run pre-commit install
+uv sync
 ```
 
-to create a virtual enviroment containing all dependencies.
-Afterwards, You can run the test suite using
+to create a virtual environment containing all dependencies.
+The test suite requires `exiftool` to be installed and executable.
+Afterwards, you can run the test suite using
 
 ```bash
-poetry run pytest
+uv run pytest
+```
+
+and the linters using
+
+```bash
+uv run ruff format --check .
+uv run ruff check .
+uv run mypy
 ```
 
 This repository follows the [Conventional Commits](https://www.conventionalcommits.org/)
 style.
-
-### Cookiecutter template
-
-This project was created using [cruft](https://github.com/cruft/cruft) and the
-[cookiecutter-pyproject](https://github.com/escaped/cookiecutter-pypackage) template.
-In order to update this repository to the latest template version run
-
-```sh
-cruft update
-```
-
-in the root of this repository.
 

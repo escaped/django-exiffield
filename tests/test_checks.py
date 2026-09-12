@@ -71,21 +71,27 @@ def test_source(mocked_which, kwargs, error):
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    'denormalized_fields, error',
+    'denormalized_fields, error, message',
     [
-        ([], 'exiffield.E005'),  # invalid type
+        ([], 'exiffield.E005', 'should be a dictionary'),  # invalid type
         (
             {'model_field': lambda exif: ''},
             'exiffield.E006',
+            'not found on',
         ),  # field not found on model
-        ({'camera': lambda exif: ''}, 'exiffield.E007'),  # field is editable...
+        (
+            {'camera': lambda exif: ''},
+            'exiffield.E007',
+            'should not be editable',
+        ),  # field is editable...
         (
             {'datetaken': 'DateTimeOriginal'},
             'exiffield.E008',
+            'must be callable',
         ),  # value should be a callable
     ],
 )
-def test_fields(mocked_which, denormalized_fields, error):
+def test_fields(mocked_which, denormalized_fields, error, message):
     """
     Test checks for denormalized fields.
     """
@@ -104,6 +110,7 @@ def test_fields(mocked_which, denormalized_fields, error):
     errors = Image.check()
     assert len(errors) == 1, error
     assert errors[0].id == error, errors
+    assert message in errors[0].msg, errors
 
 
 @pytest.mark.django_db

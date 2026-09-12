@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-09-12
+
+### Changed
+
+- BREAKING: drop support for Python 3.6 - 3.9 and Django 2.2 - 5.1.
+  Supported versions are Python 3.10 - 3.14 and Django 5.2 (LTS), 6.0 and 6.1.
+- BREAKING: `ExifField` is now based on Django's native
+  `django.db.models.JSONField` instead of `jsonfield.JSONField`. Regenerating
+  migrations stores the data in the database's native JSON type.
+- BREAKING: `exiffield.getters.Orientation` and `exiffield.getters.Mode` are
+  now Django `TextChoices` instead of `choicesenum` enums. Their members are
+  `str` subclasses and can be stored and compared directly.
+- The `ExifField` default is now the callable `dict`, as required by modern
+  Django field checks.
+- Development tooling moved from poetry, tox, black, isort, flake8 and
+  pre-commit to uv, hatchling, ruff and mypy.
+
+### Removed
+
+- Dependencies `choicesenum` and `jsonfield`.
+
 ## [3.0.0] - 2020-10-30
 
 ### Added
@@ -58,7 +79,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1] - 2018-03-29
 
-[Unreleased]: https://github.com/escaped/django-exiffield/compare/3.0.0...HEAD
+[Unreleased]: https://github.com/escaped/django-exiffield/compare/4.0.0...HEAD
+[4.0.0]: https://github.com/escaped/django-exiffield/compare/3.0.0...4.0.0
 [3.0.0]: https://github.com/escaped/django-exiffield/compare/2.1.0...3.0.0
 [2.1.0]: https://github.com/escaped/django-exiffield/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/escaped/django-exiffield/compare/1.1.0...2.0.0
