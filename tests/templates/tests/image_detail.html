@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Image detail</title>
+  </head>
+  <body>
+    <h1>Image detail</h1>
+    <dl>
+      <dt>Camera</dt><dd id="camera">{{ image.camera }}</dd>
+      <dt>Model</dt><dd id="model">{{ image.exif.Model.val }}</dd>
+      <dt>Aperture</dt><dd id="aperture">{{ image.exif.Aperture.val }}</dd>
+      <dt>File name</dt><dd id="filename">{{ image.exif.FileName.val }}</dd>
+    </dl>
+  </body>
+</html>

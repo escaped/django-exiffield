@@ -17,6 +17,12 @@ def pytest_configure():
         ROOT_URLCONF='tests.urls',
         INSTALLED_APPS=('tests',),
         MEDIA_ROOT=tests_dir / 'media',
+        TEMPLATES=[
+            {
+                'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                'APP_DIRS': True,
+            },
+        ],
     )
 
     django.setup()
