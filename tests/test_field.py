@@ -326,11 +326,14 @@ def test_async():
     try:
         img.save()
         assert img.exif == {}
+        assert img.camera == ''
 
         exif_field = UnsyncedImage._meta.get_field('exif')
         exif_field.update_exif(img, commit=True)
 
         img.refresh_from_db()
         assert img.exif['FileName']['val'] == IMAGE_NAME
+        assert img.camera == 'DMC-GX7'  # denormalized on the deferred save
     finally:
-        (Path(settings.MEDIA_ROOT) / IMAGE_NAME).unlink(missing_ok=True)
+        if img.image.name:
+            img.image.storage.delete(img.image.name)
