@@ -85,6 +85,15 @@ def test_get_type(value, expected):
             },
             datetime.datetime(2018, 3, 2, 9, 33, 10, tzinfo=datetime.timezone.utc),
         ],
+        # an unparseable offset falls back to GPSDateTime when available
+        [
+            {
+                'DateTimeOriginal': {'val': '2018:03:02 11:33:10'},
+                'OffsetTimeOriginal': {'val': 'not-an-offset'},
+                'GPSDateTime': {'val': '2018:03:02 09:33:10Z'},
+            },
+            datetime.datetime(2018, 3, 2, 9, 33, 10, tzinfo=datetime.timezone.utc),
+        ],
     ],
 )
 def test_get_datetaken(exif_data, expected):
@@ -96,6 +105,13 @@ def test_get_datetaken(exif_data, expected):
     [
         [{'DateTimeOriginal': {'val': 'invalid format'}}, 'Could not parse'],
         [{'GPSDateTime': {'val': 'invalid format'}}, 'Could not parse'],
+        [
+            {
+                'DateTimeOriginal': {'val': '2018:03:02 11:33:10'},
+                'OffsetTimeOriginal': {'val': 'not-an-offset'},
+            },
+            'Could not parse',
+        ],
         [{}, 'Could not find'],  # missing key
     ],
 )

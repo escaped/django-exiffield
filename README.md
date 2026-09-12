@@ -108,8 +108,8 @@ Get file type, e.g. video or image
 
 `get_datetaken -> Optional[datetime]`  
 Get when the file was created as `datetime`. The result is timezone-aware when
-the exif data contains an offset (`OffsetTimeOriginal`/`OffsetTime`) or a
-`GPSDateTime` value, which is UTC by definition; otherwise it is naive.
+the exif data contains a parseable offset (`OffsetTimeOriginal`/`OffsetTime`)
+or a `GPSDateTime` value, which is UTC by definition; otherwise it is naive.
 
 `get_orientation  -> exiffield.getters.Orientation`  
 Get orientation of media file.
@@ -126,7 +126,8 @@ Get image position in a sequence.
 
 ExifTool stores `DateTimeOriginal` as local time without a timezone, so
 `get_datetaken` can only return a naive `datetime` for files that do not carry
-an offset or GPS time. With `USE_TZ = True`, wrap the value with
+a usable offset or GPS time. An unparseable offset raises an `ExifError`
+instead of silently producing a naive datetime. With `USE_TZ = True`, wrap the value with
 `django.utils.timezone.make_aware` using the timezone the photos were taken in,
 e.g. in a custom getter:
 

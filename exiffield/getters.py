@@ -56,9 +56,9 @@ def get_datetaken(exif: ExifType) -> datetime.datetime | None:
     """
     Return when the file was created.
 
-    The result is timezone-aware when the exif data provides a timezone:
-    ``DateTimeOriginal`` is combined with ``OffsetTimeOriginal`` or
-    ``OffsetTime``, and ``GPSDateTime`` is UTC by definition. Only without
+    The result is timezone-aware when the exif data provides a usable
+    timezone: ``DateTimeOriginal`` is combined with ``OffsetTimeOriginal``
+    or ``OffsetTime``, and ``GPSDateTime`` is UTC by definition. Only without
     any offset information, a naive datetime is returned.
     """
     original = exif.get('DateTimeOriginal', {}).get('val')
@@ -85,6 +85,8 @@ def get_datetaken(exif: ExifType) -> datetime.datetime | None:
     if original:
         parsed_original = _parse_exif_datetime(original)
         if parsed_original:
+            if offset:
+                raise ExifError(f'Could not parse {offset}')
             return parsed_original
         raise ExifError(f'Could not parse {original}')
 
