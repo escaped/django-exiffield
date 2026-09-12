@@ -119,3 +119,22 @@ def test_get_sequencetype(exif_data, expected):
 )
 def test_get_sequencenumber(exif_data, expected):
     assert getters.get_sequencenumber(exif_data) == expected
+
+
+@pytest.mark.parametrize(
+    'width, height, expected',
+    [
+        [300, 200, getters.Orientation.LANDSCAPE],
+        [200, 300, getters.Orientation.PORTRAIT],
+    ],
+)
+def test_get_orientation_without_orientation_tag(width, height, expected):
+    """
+    Files with no orientation tag are treated as unrotated.
+    """
+    exif_data = {
+        'ImageWidth': {'val': width},
+        'ImageHeight': {'val': height},
+    }
+
+    assert getters.get_orientation(exif_data) == expected
