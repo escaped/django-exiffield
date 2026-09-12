@@ -311,6 +311,26 @@ def test_sync_disabled_does_not_extract_exif(mocker):
     assert img.exif == {}
 
 
-@pytest.mark.xfail
+@pytest.mark.django_db
 def test_async():
-    raise NotImplementedError()
+    """
+    With sync=False, extraction can be deferred and run later, e.g. from a
+    Celery or RQ task, by calling update_exif(instance, commit=True).
+    """
+    img = UnsyncedImage()
+    with open(DIR / IMAGE_NAME, mode='rb') as fh:
+        img.image.file = SimpleUploadedFile(IMAGE_NAME, fh.read())
+    img.image.name = IMAGE_NAME
+    img.image._committed = False
+
+    try:
+        img.save()
+        assert img.exif == {}
+
+        exif_field = UnsyncedImage._meta.get_field('exif')
+        exif_field.update_exif(img, commit=True)
+
+        img.refresh_from_db()
+        assert img.exif['FileName']['val'] == IMAGE_NAME
+    finally:
+        (Path(settings.MEDIA_ROOT) / IMAGE_NAME).unlink(missing_ok=True)
