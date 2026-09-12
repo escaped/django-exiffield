@@ -40,23 +40,54 @@ def get_type(exif: ExifType) -> str:
     return exif['MIMEType']['val'].split('/')[0]
 
 
+def _parse_exif_datetime(value: str) -> datetime.datetime | None:
+    """
+    Parse an exif datetime string, with or without an UTC offset.
+    """
+    for format_ in ['%Y:%m:%d %H:%M:%S%z', '%Y:%m:%d %H:%M:%S']:
+        try:
+            return datetime.datetime.strptime(value, format_)
+        except ValueError:
+            continue
+    return None
+
+
 def get_datetaken(exif: ExifType) -> datetime.datetime | None:
     """
     Return when the file was created.
-    """
-    for key in ['DateTimeOriginal', 'GPSDateTime']:
-        try:
-            datetime_str = exif[key]['val']
-        except KeyError:
-            continue
 
-        try:
-            return datetime.datetime.strptime(
-                datetime_str,
-                '%Y:%m:%d %H:%M:%S',
-            )
-        except ValueError as e:
-            raise ExifError(f'Could not parse {datetime_str}') from e
+    The result is timezone-aware when the exif data provides a timezone:
+    ``DateTimeOriginal`` is combined with ``OffsetTimeOriginal`` or
+    ``OffsetTime``, and ``GPSDateTime`` is UTC by definition. Only without
+    any offset information, a naive datetime is returned.
+    """
+    original = exif.get('DateTimeOriginal', {}).get('val')
+    offset = exif.get('OffsetTimeOriginal', {}).get('val') or exif.get(
+        'OffsetTime', {}
+    ).get('val')
+
+    if original and offset:
+        parsed_with_offset = _parse_exif_datetime(f'{original}{offset}')
+        if parsed_with_offset:
+            return parsed_with_offset
+
+    gps = exif.get('GPSDateTime', {}).get('val')
+    if gps:
+        parsed_gps = _parse_exif_datetime(gps)
+        if parsed_gps:
+            if parsed_gps.tzinfo is None:
+                # GPSDateTime is UTC even when exiftool omits the suffix
+                return parsed_gps.replace(tzinfo=datetime.timezone.utc)
+            return parsed_gps
+        if not original:
+            raise ExifError(f'Could not parse {gps}')
+
+    if original:
+        parsed_original = _parse_exif_datetime(original)
+        if parsed_original:
+            return parsed_original
+        raise ExifError(f'Could not parse {original}')
+
     raise ExifError('Could not find date')
 
 
