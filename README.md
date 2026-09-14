@@ -177,6 +177,46 @@ uv run mypy
 This repository follows the [Conventional Commits](https://www.conventionalcommits.org/)
 style.
 
+## Why is the exif data not editable?
+
+`ExifField` sets `editable=False` on purpose: the data describes the file it
+was extracted from. Making it editable raises questions the library cannot
+answer — should changes be written back into the file? What happens to edits
+when a new file is uploaded? To keep the stored data consistent, the field is
+managed by the library and overwritten whenever a new file is extracted.
+
+If you need to display or edit exif values in a form, keep the extracted data
+separate from user input:
+
+- To display values read-only, exclude the field from the form and render
+  `instance.exif` in the template.
+- To let users edit values, add a regular editable field (e.g. a `JSONField`)
+  and copy the extracted values into it once, so later user edits are kept:
+
+```python
+from django.db import models
+
+from exiffield.fields import ExifField
+
+
+class Image(models.Model):
+    image = models.ImageField()
+    exif = ExifField(source='image')
+    exif_notes = models.JSONField(default=dict, blank=True)
+
+    def save(self, *args, **kwargs):
+        created = self.pk is None
+        super().save(*args, **kwargs)
+        if created and self.exif:
+            # seed the editable copy once, then leave user edits alone
+            self.exif_notes = self.exif
+            super().save(update_fields=['exif_notes'])
+```
+
+The second `save()` is needed because the exif data is extracted in the
+field's `pre_save` handler, i.e. during the first `save()`. After that, user
+edits — including clearing the field — are preserved.
+
 ## Asynchronous extraction
 
 Exif extraction runs synchronously in `pre_save` by default. If exiftool is
