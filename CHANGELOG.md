@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `getters.get_orientation` no longer raises a `KeyError` for files without
   an `Orientation` tag; they are treated as unrotated.
+- `getters.get_datetaken` now returns timezone-aware datetimes when the exif
+  data contains an UTC offset (`OffsetTimeOriginal`/`OffsetTime`) or a
+  `GPSDateTime`. Files without offset information still return a naive
+  datetime; the README shows how to handle those with `USE_TZ = True`.
 
 ## [4.0.0] - 2026-09-12
 

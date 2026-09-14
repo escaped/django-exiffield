@@ -31,13 +31,68 @@ def test_get_type(value, expected):
 @pytest.mark.parametrize(
     'exif_data, expected',
     [
+        # DateTimeOriginal is local time and stays naive without an offset
         [
             {'DateTimeOriginal': {'val': '2018:03:02 11:33:10'}},
             datetime.datetime(2018, 3, 2, 11, 33, 10),
         ],
+        # OffsetTimeOriginal gives DateTimeOriginal its UTC offset
+        [
+            {
+                'DateTimeOriginal': {'val': '2018:03:02 11:33:10'},
+                'OffsetTimeOriginal': {'val': '+02:00'},
+            },
+            datetime.datetime(
+                2018,
+                3,
+                2,
+                11,
+                33,
+                10,
+                tzinfo=datetime.timezone(datetime.timedelta(hours=2)),
+            ),
+        ],
+        # OffsetTime is the fallback offset tag
+        [
+            {
+                'DateTimeOriginal': {'val': '2018:03:02 11:33:10'},
+                'OffsetTime': {'val': '-05:00'},
+            },
+            datetime.datetime(
+                2018,
+                3,
+                2,
+                11,
+                33,
+                10,
+                tzinfo=datetime.timezone(datetime.timedelta(hours=-5)),
+            ),
+        ],
+        # GPSDateTime is UTC, also when exiftool omits the Z suffix
         [
             {'GPSDateTime': {'val': '2018:03:02 11:33:10'}},
-            datetime.datetime(2018, 3, 2, 11, 33, 10),
+            datetime.datetime(2018, 3, 2, 11, 33, 10, tzinfo=datetime.timezone.utc),
+        ],
+        [
+            {'GPSDateTime': {'val': '2018:03:02 11:33:10Z'}},
+            datetime.datetime(2018, 3, 2, 11, 33, 10, tzinfo=datetime.timezone.utc),
+        ],
+        # GPSDateTime provides the timezone when DateTimeOriginal has none
+        [
+            {
+                'DateTimeOriginal': {'val': '2018:03:02 11:33:10'},
+                'GPSDateTime': {'val': '2018:03:02 09:33:10Z'},
+            },
+            datetime.datetime(2018, 3, 2, 9, 33, 10, tzinfo=datetime.timezone.utc),
+        ],
+        # an unparseable offset falls back to GPSDateTime when available
+        [
+            {
+                'DateTimeOriginal': {'val': '2018:03:02 11:33:10'},
+                'OffsetTimeOriginal': {'val': 'not-an-offset'},
+                'GPSDateTime': {'val': '2018:03:02 09:33:10Z'},
+            },
+            datetime.datetime(2018, 3, 2, 9, 33, 10, tzinfo=datetime.timezone.utc),
         ],
     ],
 )
@@ -49,6 +104,14 @@ def test_get_datetaken(exif_data, expected):
     'exif_data, error_msg',
     [
         [{'DateTimeOriginal': {'val': 'invalid format'}}, 'Could not parse'],
+        [{'GPSDateTime': {'val': 'invalid format'}}, 'Could not parse'],
+        [
+            {
+                'DateTimeOriginal': {'val': '2018:03:02 11:33:10'},
+                'OffsetTimeOriginal': {'val': 'not-an-offset'},
+            },
+            'Could not parse',
+        ],
         [{}, 'Could not find'],  # missing key
     ],
 )
