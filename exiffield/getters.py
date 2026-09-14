@@ -64,7 +64,7 @@ def get_orientation(exif: ExifType) -> Orientation:
     """
     Return orientation of the file.
     """
-    orientation = exif['Orientation']['num']
+    orientation = exif.get('Orientation', {}).get('num', 1)
 
     width, height = exif['ImageWidth']['val'], exif['ImageHeight']['val']
     if orientation > 4:

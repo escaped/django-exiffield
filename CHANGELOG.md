@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `getters.get_orientation` no longer raises a `KeyError` for files without
+  an `Orientation` tag; they are treated as unrotated.
+
 ## [4.0.0] - 2026-09-12
 
 ### Changed
