@@ -2,21 +2,20 @@ import json
 import logging
 import shutil
 import subprocess
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator, List
 
 from django.core import checks, exceptions
 from django.db import models
 from django.db.models.fields.files import FieldFile
 from django.db.models.signals import post_init, pre_save
-from jsonfield import JSONField
 
 from .exceptions import ExifError
 
 logger = logging.getLogger(__name__)
 
 
-def get_exif(file_: FieldFile) -> str:
+def get_exif(file_: FieldFile) -> bytes:
     """
     Use exiftool to extract exif data from the given file field.
     """
@@ -40,19 +39,19 @@ def get_exif(file_: FieldFile) -> str:
     return process.stdout
 
 
-class ExifField(JSONField):
+class ExifField(models.JSONField):
     def __init__(self, *args, **kwargs) -> None:
         """
-        Extract fields for denormalized exif values.
+        Store exif data extracted from the source file.
         """
         self.denormalized_fields = kwargs.pop('denormalized_fields', {})
         self.source = kwargs.pop('source', None)
         self.sync = kwargs.pop('sync', True)
         kwargs['editable'] = False
-        kwargs['default'] = {}
+        kwargs['default'] = dict
         super().__init__(*args, **kwargs)
 
-    def check(self, **kwargs) -> List[checks.CheckMessage]:
+    def check(self, **kwargs) -> list[checks.CheckMessage]:
         """
         Check if current configuration is valid.
         """
@@ -142,7 +141,7 @@ class ExifField(JSONField):
 
             if not callable(func):
                 yield checks.Error(
-                    f'`Value for {fieldname}` on {self.model} should not be a callable.',
+                    f'Value for `{fieldname}` on {self.model} must be callable.',
                     hint='Check your values for `denormalized_fields`',
                     obj=self,
                     id='exiffield.E008',

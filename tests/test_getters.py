@@ -55,7 +55,18 @@ def test_get_datetaken(exif_data, expected):
 def test_get_datetaken_invalid_data(exif_data, error_msg):
     with pytest.raises(ExifError) as exc_info:
         getters.get_datetaken(exif_data)
-        assert error_msg in exc_info.value.message
+    assert error_msg in str(exc_info.value)
+
+
+@pytest.mark.parametrize('enum', [getters.Orientation, getters.Mode])
+def test_enums_are_strings(enum):
+    """
+    Enum values can be stored in and compared with char fields.
+    """
+    for member in enum:
+        assert isinstance(member, str)
+        assert str(member) == member.value
+        assert member == member.value
 
 
 @pytest.mark.parametrize(

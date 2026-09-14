@@ -17,3 +17,14 @@ class Image(models.Model):
 
     class Meta:
         app_label = 'tests'
+
+
+class UnsyncedImage(models.Model):
+    image = models.ImageField()
+    exif = ExifField(
+        source='image',
+        sync=False,
+    )
+
+    class Meta:
+        app_label = 'tests'

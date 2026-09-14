@@ -1,20 +1,20 @@
 import datetime
-from enum import Enum
-from typing import Any, Callable, Dict, Optional
+from collections.abc import Callable
+from typing import Any, cast
 
-from choicesenum import ChoicesEnum
+from django.db import models
 
 from .exceptions import ExifError
 
-ExifType = Dict[str, Dict[str, Any]]
+ExifType = dict[str, dict[str, Any]]
 
 
-class Orientation(ChoicesEnum, Enum):  # NOTE inherits from `Enum` to make `mypy` happy
+class Orientation(models.TextChoices):
     LANDSCAPE = 'landscape'
     PORTRAIT = 'portrait'
 
 
-class Mode(ChoicesEnum, Enum):  # NOTE inherits from `Enum` to make `mypy` happy
+class Mode(models.TextChoices):
     TIMELAPSE = 'timelapse'
     BURST = 'burst'
     BRACKETING = 'bracketing'
@@ -40,7 +40,7 @@ def get_type(exif: ExifType) -> str:
     return exif['MIMEType']['val'].split('/')[0]
 
 
-def get_datetaken(exif: ExifType) -> Optional[datetime.datetime]:
+def get_datetaken(exif: ExifType) -> datetime.datetime | None:
     """
     Return when the file was created.
     """
@@ -71,11 +71,11 @@ def get_orientation(exif: ExifType) -> Orientation:
         # image rotated image by 90 degrees
         width, height = height, width
     if width < height:
-        return Orientation.PORTRAIT
-    return Orientation.LANDSCAPE
+        return cast(Orientation, Orientation.PORTRAIT)
+    return cast(Orientation, Orientation.LANDSCAPE)
 
 
-def get_sequencetype(exif) -> Mode:
+def get_sequencetype(exif: ExifType) -> Mode:
     """
     Return the recoding mode.
     """
@@ -86,9 +86,9 @@ def get_sequencetype(exif) -> Mode:
         pass
     else:
         if mode == 1:
-            return Mode.BURST
+            return cast(Mode, Mode.BURST)
         if mode == 2:
-            return Mode.BRACKETING
+            return cast(Mode, Mode.BRACKETING)
 
     # time lapse
     try:
@@ -97,11 +97,11 @@ def get_sequencetype(exif) -> Mode:
         pass
     else:
         if mode == 1:
-            return Mode.TIMELAPSE
-    return Mode.SINGLE
+            return cast(Mode, Mode.TIMELAPSE)
+    return cast(Mode, Mode.SINGLE)
 
 
-def get_sequencenumber(exif) -> int:
+def get_sequencenumber(exif: ExifType) -> int:
     """
     Return position of image within the recoding sequence.
     """
