@@ -151,3 +151,30 @@ uv run mypy
 This repository follows the [Conventional Commits](https://www.conventionalcommits.org/)
 style.
 
+## Asynchronous extraction
+
+Exif extraction runs synchronously in `pre_save` by default. If exiftool is
+slow or your storage is remote, pass `sync=False` and run the extraction from
+a background task:
+
+```python
+class Photo(models.Model):
+    image = models.ImageField()
+    exif = ExifField(source='image', sync=False)
+```
+
+```python
+from celery import shared_task
+
+
+@shared_task
+def extract_exif(pk):
+    photo = Photo.objects.get(pk=pk)
+    Photo._meta.get_field('exif').update_exif(photo, commit=True)
+```
+
+Enqueue the task after the file has been saved (e.g. from a `post_save`
+receiver) so the file is committed to storage before exiftool reads it.
+`commit=True` saves the extracted data and fills `denormalized_fields`;
+with `commit=False` only the in-memory instance is updated. The same pattern
+works with RQ, Django-Q and other background workers.
